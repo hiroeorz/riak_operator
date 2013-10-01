@@ -1,0 +1,11 @@
+#!/usr/bin/env ruby
+# -*- coding: utf-8 -*-
+
+require "pry"
+require 'optparse'
+require "riak_operator.rb"
+
+riak = RiakOperator::RiakClient.new
+riak.set_command_line_options(ARGV)
+
+binding.pry
