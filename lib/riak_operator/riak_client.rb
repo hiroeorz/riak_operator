@@ -190,7 +190,7 @@ module RiakOperator
     end
 
     def create_new_index(bucket)
-      http_client.put('#{@base_url}/search/index/#{index_name(bucket)}')
+      http_client.put("#{@base_url}/search/index/#{index_name(bucket)}")
     end
 
     def set_index(bucket)
