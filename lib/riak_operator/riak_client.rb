@@ -25,6 +25,7 @@ module RiakOperator
     def create_index(bucket, type = @type)
       url = index_create_url(bucket)
       http_client.put(url, "", "content-type" => "application/json")
+      create_new_index(bucket)
       activate_bucket_type(type)
       set_index(bucket)
     end
@@ -184,8 +185,16 @@ module RiakOperator
       "#{@base_url}/types/#{type}/buckets/#{bucket}/props"
     end
 
+    def index_name(bucket)
+      "#{bucket}_index"
+    end
+
+    def create_new_index(bucket)
+      http_client.put('#{@base_url}/search/index/#{index_name(bucket)}')
+    end
+
     def set_index(bucket)
-      set_props(bucket, :search_index => "#{bucket}_index")
+      set_props(bucket, :search_index => "#{index_name(bucket)}")
     end
 
     def find_by_yokozuna(bucket, query_options = {})
