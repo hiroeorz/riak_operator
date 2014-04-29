@@ -5,7 +5,7 @@ require "riak_operator/optparser"
 
 module RiakOperator
   class RiakClient
-    attr_accessor :bucket
+    attr_accessor :bucket, :type
     attr_reader :base_url, :debug
 
     HTTP_CODE_OK = 200
@@ -17,14 +17,21 @@ module RiakOperator
       @base_url = nil
       @yz = nil
       @buckets = []
+      @type = "search"
     end
     
     ### index and props handler
 
-    def create_index(bucket)
+    def create_index(bucket, type = @type)
       url = index_create_url(bucket)
       http_client.put(url, "", "content-type" => "application/json")
+      activate_bucket_type(type)
       set_index(bucket)
+    end
+
+    def activate_bucket_type(type)
+      system("riak-admin bucket-type create #{type} '{\"props\":{}}'")
+      system("riak-admin bucket-type activate #{type}")
     end
 
     def props(bucket)
@@ -173,12 +180,12 @@ module RiakOperator
       "#{@base_url}/yz/index/#{index}"
     end
 
-    def props_url(bucket)
-      "#{@base_url}/buckets/#{bucket}/props"
+    def props_url(bucket, type = @type)
+      "#{@base_url}/types/#{type}/buckets/#{bucket}/props"
     end
 
     def set_index(bucket)
-      set_props(bucket, :yz_index => "#{bucket}_index")
+      set_props(bucket, :search_index => "#{bucket}_index")
     end
 
     def find_by_yokozuna(bucket, query_options = {})
