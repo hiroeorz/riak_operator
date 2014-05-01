@@ -17,7 +17,7 @@ module RiakOperator
       @base_url = nil
       @yz = nil
       @buckets = []
-      @type = "search"
+      @type = "default"
     end
     
     ### index and props handler
@@ -25,12 +25,12 @@ module RiakOperator
     def create_index(bucket, type = @type)
       url = index_create_url(bucket)
       http_client.put(url, "", "content-type" => "application/json")
-      create_new_index(bucket)
       activate_bucket_type(type)
       set_index(bucket)
     end
 
     def activate_bucket_type(type)
+      return if type == "default" #default type is already exist and activated.
       system("riak-admin bucket-type create #{type} '{\"props\":{}}'")
       system("riak-admin bucket-type activate #{type}")
     end
@@ -177,8 +177,7 @@ module RiakOperator
     end
 
     def index_create_url(bucket)
-      index = "#{bucket}_index"
-      "#{@base_url}/yz/index/#{index}"
+      "#{@base_url}/search/index/#{index_name(bucket)}"
     end
 
     def props_url(bucket, type = @type)
@@ -187,10 +186,6 @@ module RiakOperator
 
     def index_name(bucket)
       "#{bucket}_index"
-    end
-
-    def create_new_index(bucket)
-      http_client.put("#{@base_url}/search/index/#{index_name(bucket)}")
     end
 
     def set_index(bucket)
